@@ -1,0 +1,6 @@
+{
+  "name": "delivery-crew",
+  "version": "1.3.0",
+  "description": "AI software delivery crew for Claude Code that adapts to the delivery profile (api-only, web, hybrid, low-hybrid) and the stack (default Laravel+Blade+Flutter; Node, Django, React SPA, React Native also supported).",
+  "author": { "name": "Nexuslinkservices" }
+}

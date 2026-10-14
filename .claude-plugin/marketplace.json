@@ -1,0 +1,11 @@
+{
+  "name": "multi-agent",
+  "owner": { "name": "Nexuslinkservices" },
+  "plugins": [
+    {
+      "name": "delivery-crew",
+      "source": "./plugins/delivery-crew",
+      "description": "Profile- and stack-driven delivery crew (default Laravel+Blade+Flutter; Node, Django, React SPA and React Native also supported): api-only, web, hybrid or low-hybrid, with human review gates."
+    }
+  ]
+}
