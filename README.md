@@ -13,8 +13,13 @@ mobile framework — see [Stack](#stack) below. See [docs/guide.md](docs/guide.m
 Public repo, so no extra `git` access setup needed.
 Local test without Git: `/plugin marketplace add ./path/to/this/repo`
 
-No `/plugin` support in your VS Code panel? Run `./install.sh <path-to-project>` from a clone of this repo instead —
-it copies the agents/commands straight into that project's `.claude/` folder and writes a version stamp.
+No `/plugin` support in your VS Code panel? Clone this repo and run `install.sh` instead:
+```
+git clone https://github.com/raviteam-web/multi-agent-plugins.git
+cd multi-agent-plugins
+./install.sh /path/to/your/project
+```
+It copies the agents/commands straight into that project's `.claude/` folder and writes a version stamp.
 
 Either route is per-person, per-machine — nobody gets it automatically just because a teammate installed it.
 See [docs/guide.md §2](docs/guide.md#2-requirements-and-install) for exactly where each route installs to.
@@ -83,5 +88,8 @@ Edit agents/commands, bump `version` in `plugins/delivery-crew/.claude-plugin/pl
 project: `/plugin marketplace update multi-agent`.
 
 ## Notes
-- Models: Haiku for PO/BA/UX/UI/DevOps; Sonnet for Tech Lead, developers, QA (edit `model:` in agents/*.md).
-- Runs on your Claude subscription inside Claude Code; usage limits apply. For client-facing automation use the API-based CrewAI project.
+- Models: Minimum Sonnet for PO/BA/UX/UI/Tech Lead/developers/QA/DevOps agent; you can change it from `model:` in agents/*.md.
+- Runs on your Claude subscription inside Claude Code, not the API — no per-token billing, so no surprise costs
+  piling up as the crew runs; usage limits apply instead. That's why we moved off the API-based CrewAI project:
+  it bills per token and gets expensive fast at this scale. Reach for the API-based CrewAI project only if you
+  specifically need client-facing automation outside Claude Code.
