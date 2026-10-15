@@ -50,9 +50,13 @@ same way you did. There's no shared or central install; each route below is loca
   `<target-project>/.claude/agents/delivery-crew/` and `<target-project>/.claude/commands/delivery-crew/`, plus
   a version stamp at `<target-project>/.claude/delivery-crew.version`. Re-run it for every project you want the
   crew in, and every teammate using this route runs it themselves, on their own machine, against their own
-  project checkout.
-This copies `agents/` and `commands/` into your project's `.claude/` folder and writes a version stamp
-(`.claude/delivery-crew.version`). Re-run it after pulling an update to upgrade in place.
+  project checkout. Re-run it after pulling an update to upgrade in place.
+
+**Don't judge either route by your project's file tree.** The `/plugin` route intentionally leaves no
+`.claude/agents/` or `.claude/commands/` folder in your project — only `.claude/settings.json` changes, recording
+that the plugin is enabled. That's correct, not a failed install. The real test for either route is the same:
+run `/agents` (should list `delivery-crew:product-owner`, `delivery-crew:tech-lead`, etc.) or just try
+`/delivery-crew:plan` — if it runs (even to tell you `docs/brief.md` is missing), the crew is installed and active.
 
 ## 3. Quickstart — new project
 
