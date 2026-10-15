@@ -224,6 +224,10 @@ is stacked on it.
   restart from there (useful after a usage-limit stop or an interrupted run — nothing before that stage is re-run).
 - **Hitting a Claude usage limit mid-pipeline**: wait for the limit to reset, then resume from the last stage
   that didn't finish — check the last line the orchestrator printed for the stage name and output path.
+- **Cost model**: the crew runs on your Claude subscription inside Claude Code, not the API — no per-token
+  billing, so costs don't pile up as it runs; usage limits apply instead (see above). That's why we moved off
+  the API-based CrewAI setup, which bills per token and gets expensive fast at this scale — reach for that
+  project only if you specifically need client-facing automation outside Claude Code.
 - **The Tech Lead gate**: always read `docs/05-tech-lead.md` before approving. This is the one point where a
   wrong assumption (wrong schema, wrong file ownership, or the wrong ORM/templating choice for an open `## Stack`
   field) is cheap to catch and expensive to catch later.
@@ -253,11 +257,14 @@ is stacked on it.
 
 ## 9. Updating and versioning
 
+- Edit the agents and commands under `plugins/delivery-crew/`.
 - Bump `version` in `plugins/delivery-crew/.claude-plugin/plugin.json` and add a `CHANGELOG.md` entry for any
   change to agents or commands.
+- If behavior, fields, or commands changed, update this guide and the README in the same change.
+- Each agent's model is set by the `model:` line in `agents/*.md` (minimum Sonnet) — change it there if needed.
 - Push to the repo, tag the release (`git tag vX.Y.Z`).
-- Each project then runs `/plugin marketplace update multi-agent` (CLI route) or re-runs `install.sh` (VS Code
-  panel route).
+- Updates are not automatic — each person updates on their own machine: `/plugin marketplace update
+  multi-agent` (CLI route) or re-run `install.sh` (VS Code panel route).
 - Report issues or request changes the same way you would any other change to this repo — open an issue or
   reach out to whoever owns the plugin repo for your org.
 
