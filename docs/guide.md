@@ -37,26 +37,18 @@ cd multi-agent-plugins
 ./install.sh /path/to/your/project
 ```
 
-**This is per-person, not per-team.** The repo being public means anyone *can* install it, but nobody gets it
-automatically just because a teammate did — every person installs it on their own machine, individually, the
-same way you did. There's no shared or central install; each route below is local to the machine it's run on:
+**Everyone installs it themselves.** The repo being public just means anyone is allowed to install it — it
+doesn't spread to anyone automatically. If you install it, that only sets it up on your own computer. Every
+teammate has to run one of the two install routes themselves, on their own computer.
 
-- **`/plugin` route**: global per machine, not per project. `/plugin marketplace add` registers the marketplace
-  under `~/.claude/plugins/marketplaces/multi-agent/` (a clone of this repo) and caches the plugin under
-  `~/.claude/plugins/cache/`; `/plugin install` then records that this plugin is enabled, normally per project
-  via that project's `.claude/settings.json`. Only works in a Claude Code client that supports `/plugin` (CLI,
-  desktop — not every VS Code panel).
-- **`install.sh` route**: local per project, not global. It copies `agents/` and `commands/` straight into
-  `<target-project>/.claude/agents/delivery-crew/` and `<target-project>/.claude/commands/delivery-crew/`, plus
-  a version stamp at `<target-project>/.claude/delivery-crew.version`. Re-run it for every project you want the
-  crew in, and every teammate using this route runs it themselves, on their own machine, against their own
-  project checkout. Re-run it after pulling an update to upgrade in place.
+- **`/plugin` route**: Claude Code manages this one for you, in the background, on your computer. You won't see
+  any new folders in your project — that's normal for this route, not a mistake.
+- **`install.sh` route**: this one visibly copies files into your project, under its `.claude/` folder. If you
+  update the plugin later, just run `install.sh` again to get the update.
 
-**Don't judge either route by your project's file tree.** The `/plugin` route intentionally leaves no
-`.claude/agents/` or `.claude/commands/` folder in your project — only `.claude/settings.json` changes, recording
-that the plugin is enabled. That's correct, not a failed install. The real test for either route is the same:
-run `/agents` (should list `delivery-crew:product-owner`, `delivery-crew:tech-lead`, etc.) or just try
-`/delivery-crew:plan` — if it runs (even to tell you `docs/brief.md` is missing), the crew is installed and active.
+**How to check it actually worked** (don't look at your project's folders — the `/plugin` route won't show
+anything there, on purpose): run `/agents` and see if the crew's agents are listed, or just try
+`/delivery-crew:plan`. If it runs — even if it just tells you `docs/brief.md` is missing — the install worked.
 
 ## 3. Quickstart — new project
 
