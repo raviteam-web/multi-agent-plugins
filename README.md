@@ -16,6 +16,9 @@ Local test without Git: `/plugin marketplace add ./path/to/this/repo`
 No `/plugin` support in your VS Code panel? Run `./install.sh <path-to-project>` from a clone of this repo instead —
 it copies the agents/commands straight into that project's `.claude/` folder and writes a version stamp.
 
+Either route is per-person, per-machine — nobody gets it automatically just because a teammate installed it.
+See [docs/guide.md §2](docs/guide.md#2-requirements-and-install) for exactly where each route installs to.
+
 ## Use
 1. `/delivery-crew:crew-init`  creates CLAUDE.md and docs/brief.md (never overwrites)
 2. Fill in `docs/brief.md`: milestone, features, Delivery profile, exclusions, database (PENDING blocks the run).

@@ -36,6 +36,21 @@ git clone <repo-url>
 cd multi-agent-plugins
 ./install.sh /path/to/your/project
 ```
+
+**This is per-person, not per-team.** The repo being public means anyone *can* install it, but nobody gets it
+automatically just because a teammate did — every person installs it on their own machine, individually, the
+same way you did. There's no shared or central install; each route below is local to the machine it's run on:
+
+- **`/plugin` route**: global per machine, not per project. `/plugin marketplace add` registers the marketplace
+  under `~/.claude/plugins/marketplaces/multi-agent/` (a clone of this repo) and caches the plugin under
+  `~/.claude/plugins/cache/`; `/plugin install` then records that this plugin is enabled, normally per project
+  via that project's `.claude/settings.json`. Only works in a Claude Code client that supports `/plugin` (CLI,
+  desktop — not every VS Code panel).
+- **`install.sh` route**: local per project, not global. It copies `agents/` and `commands/` straight into
+  `<target-project>/.claude/agents/delivery-crew/` and `<target-project>/.claude/commands/delivery-crew/`, plus
+  a version stamp at `<target-project>/.claude/delivery-crew.version`. Re-run it for every project you want the
+  crew in, and every teammate using this route runs it themselves, on their own machine, against their own
+  project checkout.
 This copies `agents/` and `commands/` into your project's `.claude/` folder and writes a version stamp
 (`.claude/delivery-crew.version`). Re-run it after pulling an update to upgrade in place.
 
