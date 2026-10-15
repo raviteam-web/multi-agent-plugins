@@ -50,7 +50,7 @@ teammate has to run one of the two install routes themselves, on their own compu
 anything there, on purpose): run `/agents` and see if the crew's agents are listed, or just try
 `/delivery-crew:plan`. If it runs — even if it just tells you `docs/brief.md` is missing — the install worked.
 
-## 3. Quickstart — new project
+## 3. Quickstart — New project
 
 1. `/delivery-crew:crew-init` — creates `CLAUDE.md` and `docs/brief.md` if they don't already exist (never overwrites).
 2. Fill in `docs/brief.md`: milestone, feature list, Delivery profile, exclusions, and a real database choice
@@ -61,7 +61,7 @@ anything there, on purpose): run `/agents` and see if the crew's agents are list
 5. `/delivery-crew:deliver` — runs the pipeline stage by stage. It stops after the Tech Lead stage for your
    approval before any developer touches code.
 
-## 4. Using it on an existing project
+## 4. Quickstart — On an existing project
 
 Existing codebases need more care, because the crew is writing into code that's already live and already has
 conventions. Do this pre-flight before `crew-init`:
