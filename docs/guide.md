@@ -20,7 +20,7 @@ It is **not**:
 
 ## 2. Requirements and install
 
-- Claude Code (CLI, desktop, or the VS Code extension) with access to this plugin's repo.
+- Claude Code (CLI, desktop, or the VS Code extension). The repo is public, so no repo access setup is needed.
 - Whichever tools the chosen stack needs are already installed where that surface exists: `composer`/PHP (laravel),
   Node (node backend, or a `spa` web app), Python (django), `flutter`, or `react-native`/Expo tooling.
 
@@ -29,7 +29,6 @@ It is **not**:
 /plugin marketplace add raviteam-web/multi-agent-plugins
 /plugin install delivery-crew@multi-agent
 ```
-Needs `git` access to the private repo (SSH key or `gh auth login`).
 
 **VS Code-panel route**, if `/plugin` isn't available in your panel:
 ```

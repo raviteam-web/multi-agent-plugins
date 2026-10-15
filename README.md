@@ -10,7 +10,7 @@ mobile framework — see [Stack](#stack) below. See [docs/guide.md](docs/guide.m
 /plugin marketplace add raviteam-web/multi-agent-plugins
 /plugin install delivery-crew@multi-agent
 ```
-Private repo: make sure `git` already has access (SSH key or `gh auth login`).
+Public repo, so no extra `git` access setup needed.
 Local test without Git: `/plugin marketplace add ./path/to/this/repo`
 
 No `/plugin` support in your VS Code panel? Run `./install.sh <path-to-project>` from a clone of this repo instead —
