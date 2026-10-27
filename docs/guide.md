@@ -48,27 +48,30 @@ teammate has to run one of the two install routes themselves, on their own compu
 
 **How to check it actually worked** (don't look at your project's folders — the `/plugin` route won't show
 anything there, on purpose): run `/agents` and see if the crew's agents are listed, or just try
-`/delivery-crew:plan`. If it runs — even if it just tells you `docs/brief.md` is missing — the install worked.
+`/delivery-crew:ma-plan`. If it runs — even if it just tells you `docs/brief.md` is missing — the install worked.
 
 Every command in this guide is written as `/delivery-crew:<name>` (the marketplace-route form). If you
 installed via `install.sh` instead, there's no plugin namespace — drop the prefix and use `/<name>` (e.g.
-`/crew-init`, `/plan`, `/deliver`) directly.
+`/ma-init`, `/ma-plan`, `/ma-deliver`) directly. Every command is prefixed `ma-` ("multi-agent"), so it's
+always clear which commands are this crew's and which are Claude Code's own built-ins.
 
 ## 3. Quickstart — New project
 
-1. `/delivery-crew:crew-init` — creates `CLAUDE.md` and `docs/brief.md` if they don't already exist (never overwrites).
+1. `/delivery-crew:ma-init` — creates `CLAUDE.md` and `docs/brief.md` if they don't already exist (never overwrites).
 2. Fill in `docs/brief.md`: milestone, feature list, Delivery profile, exclusions, and a real database choice
    (leaving it `PENDING` blocks the run). Leave `project_mode` unset or `new`. Leave `## Stack` out entirely unless
    this project isn't Laravel+Blade+Flutter — see §5 for the field values.
-3. `/delivery-crew:plan` — previews the stages and branches that would run. No agents run, nothing is written.
+3. `/delivery-crew:ma-plan` — previews the stages and branches that would run. No agents run, nothing is written.
 4. `/agents` — confirm the crew's agents loaded.
-5. `/delivery-crew:deliver` — runs the pipeline stage by stage. It stops after the Tech Lead stage for your
+5. `/delivery-crew:ma-deliver` — runs the pipeline stage by stage. It stops after the Tech Lead stage for your
    approval before any developer touches code.
+
+Both `ma-plan` and `ma-deliver` also accept a Jira ticket id in place of the brief-first flow — see §10.
 
 ## 4. Quickstart — On an existing project
 
 Existing codebases need more care, because the crew is writing into code that's already live and already has
-conventions. Do this pre-flight before `crew-init`:
+conventions. Do this pre-flight before `ma-init`:
 
 - Clean working tree (commit or stash anything in progress).
 - Baseline tests are green, so you can tell the crew's changes apart from pre-existing failures.
@@ -76,7 +79,7 @@ conventions. Do this pre-flight before `crew-init`:
 
 Then:
 
-1. `/delivery-crew:crew-init`, and in `docs/brief.md` set:
+1. `/delivery-crew:ma-init`, and in `docs/brief.md` set:
    - `project_mode: existing`
    - `layout:` — the real paths, if they differ from this plugin's `backend/` and `mobile/<app>/` defaults,
      e.g. `backend = api/, web = api/resources/views, mobile/customer = apps/customer_app`
@@ -84,7 +87,7 @@ Then:
      default for an existing project that isn't that stack); `codebase-discoverer` will flag a mismatch, not fix it.
    - One small feature for the first run, not the whole backlog. Tight `Exclusions`. Real schema notes (what
      tables already exist), not a from-scratch schema.
-2. `/delivery-crew:deliver` now inserts a **Discover** stage first. The `codebase-discoverer` agent reads the
+2. `/delivery-crew:ma-deliver` now inserts a **Discover** stage first. The `codebase-discoverer` agent reads the
    real repo (backend manifest — composer.json / package.json / manage.py —, migrations, models, routes, views,
    and each mobile app's pubspec.yaml or package.json) and writes `docs/00-codebase-map.md`.
    **A human must read and correct this file** before the pipeline continues to Tech Lead — it's the foundation
@@ -105,7 +108,7 @@ Then:
 
 | | New project | Existing project |
 |---|---|---|
-| Setup | `crew-init`, fill `docs/brief.md` | Clean tree, baseline tests green, dev DB confirmed, then `crew-init` |
+| Setup | `ma-init`, fill `docs/brief.md` | Clean tree, baseline tests green, dev DB confirmed, then `ma-init` |
 | Brief | Full feature list | One small feature, tight Exclusions, real schema notes, `project_mode: existing` + `layout:` |
 | First stage | product-owner | codebase-discoverer, then a human corrects `docs/00-codebase-map.md` |
 | Scaffolding | Allowed | Never |
@@ -224,8 +227,9 @@ is stacked on it.
 
 ## 7. Run discipline
 
-- **Resuming a stage**: `/delivery-crew:deliver <stage-name>`, e.g. `/delivery-crew:deliver tech-lead` to
+- **Resuming a stage**: `/delivery-crew:ma-deliver <stage-name>`, e.g. `/delivery-crew:ma-deliver tech-lead` to
   restart from there (useful after a usage-limit stop or an interrupted run — nothing before that stage is re-run).
+  A stage name and a Jira ticket id share the same argument slot; `ma-deliver` tells them apart by shape (§10).
 - **Hitting a Claude usage limit mid-pipeline**: wait for the limit to reset, then resume from the last stage
   that didn't finish — check the last line the orchestrator printed for the stage name and output path.
 - **Cost model**: the crew runs on your Claude subscription inside Claude Code, not the API — no per-token
@@ -242,11 +246,12 @@ is stacked on it.
 
 ## 8. Troubleshooting
 
-- **A stage silently does nothing, or `/init` behaves unexpectedly**: make sure you're running
-  `/delivery-crew:crew-init`, not Claude Code's built-in `/init` — the crew's command was renamed in v1.2.0
-  specifically to avoid this clash. If you installed before that, update the plugin.
+- **A stage silently does nothing, or a command name clashes with something built-in**: every command this crew
+  ships is prefixed `ma-` specifically so it can't collide with Claude Code's own commands (the original
+  `init` command was renamed to `crew-init` in v1.2.0 for this reason, then to `ma-init` in v1.5.0 once the
+  whole set was given the `ma-` prefix). If you installed before that, update the plugin.
 - **A web or mobile stage stops partway through**: check `git status` on that branch — most often it's an
-  interrupted tool call. Commit or discard partial work, then resume with `/delivery-crew:deliver web-developer`
+  interrupted tool call. Commit or discard partial work, then resume with `/delivery-crew:ma-deliver web-developer`
   (or the relevant stage name); the orchestrator re-checks the branch and base before continuing.
 - **Code lands in the wrong paths on an existing project**: this almost always means `docs/00-codebase-map.md`
   wasn't corrected before Tech Lead ran, or `layout:` in the brief didn't match reality. Fix the brief/map and
@@ -272,31 +277,35 @@ is stacked on it.
 - Report issues or request changes the same way you would any other change to this repo — open an issue or
   reach out to whoever owns the plugin repo for your org.
 
-## 10. Jira-first workflow (`ma-*` commands)
+## 10. Jira-first workflow
 
-An alternative to §3/§4: instead of hand-editing `docs/brief.md`, work from a Jira ticket. The brief-first
-commands (`crew-init`, `plan`, `deliver`) are unchanged and still work exactly as above; these are additive.
+`ma-plan` and `ma-deliver` — the same commands used in §3/§4 — both take an optional argument that lets you
+work from a Jira ticket instead of hand-editing `docs/brief.md`. With no argument they behave exactly as in
+§3/§4. The rest of the `ma-*` set only makes sense with Jira in the first place.
 
 | Command | Arguments | Does |
 |---|---|---|
 | `ma-po-new` | `"task description"` | Drafts a new Jira ticket, grounded in a read-only pass over the codebase |
 | `ma-po-edit` | `"edit description" JIRA-ID` | Edits an existing ticket, checked against the codebase |
-| `ma-plan` | `JIRA-ID` | Syncs `docs/brief.md` from the ticket, then runs the same preview as `plan` |
-| `ma-deliver` | `JIRA-ID` | Syncs the brief, then runs the same pipeline as `deliver` — same gates, no exceptions |
+| `ma-plan` | `[JIRA-ID]` | No argument: brief-first preview (§3/§4). With a ticket id: syncs `docs/brief.md` from it first |
+| `ma-deliver` | `[JIRA-ID \| stage-name]` | No argument: brief-first pipeline (§3/§4). A ticket id syncs the brief first; a stage name resumes from there |
 | `ma-deploy` | none | Deploys `dev` to staging; the target is fixed, any argument is ignored |
 | `ma-document` | `JIRA-ID` | Writes up a shipped ticket to Confluence from the ticket, the branch diff, and QA notes |
 
 `ma-qa` is out of scope for now — it's being designed separately (local Playwright, no MCP, reading a PostHog
 replay URL in-page).
 
-**Argument parsing**: a Jira id matches `[A-Z][A-Z0-9]+-\d+`. The LAST argument token matching this pattern is
-the ticket id; everything before it is free text (so `ma-po-edit "mentions JIRA-1 in passing" PROJ-12` resolves
-to id `PROJ-12`, not `JIRA-1`). A command that requires an id and gets none prints its usage line and stops. A
-malformed id (matches the shape loosely but isn't valid) stops with a clear message rather than being guessed at.
+**Argument parsing**: a Jira id matches `[A-Z][A-Z0-9]+-\d+`. For `ma-po-edit`, the LAST argument token matching
+this pattern is the ticket id; everything before it is free text (so `ma-po-edit "mentions JIRA-1 in passing"
+PROJ-12` resolves to id `PROJ-12`, not `JIRA-1`). For `ma-plan`/`ma-deliver`, the whole argument is classified
+by shape: it's either empty, a ticket id, or (for `ma-deliver` only) one of the stage names from §6 — anything
+else stops with a message naming the valid forms. A command that requires an id and gets none prints its usage
+line and stops. A malformed id (matches the shape loosely but isn't valid) stops with a clear message rather
+than being guessed at.
 
 **Integrations config**: every `ma-*` command reads its settings from a `## Integrations` section in
 `CLAUDE.md` — `jira_project_key`, `jira_site` (optional), `confluence_space`/`confluence_parent_page`
-(optional), `staging_deploy`. `crew-init` writes this as an empty template when creating a new `CLAUDE.md`, or
+(optional), `staging_deploy`. `ma-init` writes this as an empty template when creating a new `CLAUDE.md`, or
 prints it for you to paste in if `CLAUDE.md` already exists — it never modifies an existing file. If a command
 needs a key that's missing, it stops and names the key; it never guesses a Jira site, project key, or
 Confluence space.
@@ -327,7 +336,7 @@ ticket. Every other brief section — `## Delivery profile`, `project_mode`, `la
 
 **Troubleshooting**:
 - **A `ma-*` command stops asking for an Integrations key**: add it to `## Integrations` in `CLAUDE.md` — see
-  the template `crew-init` prints. Don't guess the value yourself from an old ticket or branch name.
+  the template `ma-init` prints. Don't guess the value yourself from an old ticket or branch name.
 - **"Atlassian MCP not connected"**: run `claude mcp add --transport http atlassian
   https://mcp.atlassian.com/v2/mcp` then `/mcp` in a fresh session to authenticate.
 - **A ticket id isn't recognized**: check it matches `[A-Z][A-Z0-9]+-\d+` and is the LAST token in the

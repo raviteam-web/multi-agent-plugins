@@ -25,16 +25,22 @@ Either route is per-person, per-machine — nobody gets it automatically just be
 See [docs/guide.md §2](docs/guide.md#2-requirements-and-install) for exactly where each route installs to.
 
 ## Use
-1. `/delivery-crew:crew-init`  creates CLAUDE.md and docs/brief.md (never overwrites)
+Every command is prefixed `ma-` (short for "multi-agent"), so it's always clear which commands are this crew's
+and which are Claude Code's own built-ins.
+
+1. `/delivery-crew:ma-init`     creates CLAUDE.md and docs/brief.md (never overwrites)
 2. Fill in `docs/brief.md`: milestone, features, Delivery profile, exclusions, database (PENDING blocks the run).
    Adding an existing codebase (not a fresh repo)? Set `project_mode: existing` and the `layout:` field — see below.
-3. `/delivery-crew:plan`     preview of the stages and branches, no cost
-4. `/agents`                 confirm the agents loaded
-5. `/delivery-crew:deliver`  runs the pipeline; approval required after the Tech Lead plan.
-   Resume: `/delivery-crew:deliver tech-lead`
+3. `/delivery-crew:ma-plan`     preview of the stages and branches, no cost
+4. `/agents`                    confirm the agents loaded
+5. `/delivery-crew:ma-deliver`  runs the pipeline; approval required after the Tech Lead plan.
+   Resume: `/delivery-crew:ma-deliver tech-lead`
+
+Both `ma-plan` and `ma-deliver` also accept a Jira ticket id instead (`/delivery-crew:ma-plan PROJ-123`) — see
+"Jira-first workflow" below.
 
 Installed via `install.sh` instead of `/plugin`? Drop the `delivery-crew:` prefix — the same commands are just
-`/crew-init`, `/plan`, `/deliver` (no plugin namespace exists for copied-in commands).
+`/ma-init`, `/ma-plan`, `/ma-deliver` (no plugin namespace exists for copied-in commands).
 
 ## New project vs existing project
 | | New project | Existing project |
@@ -86,22 +92,23 @@ where the brief leaves that open.
 feature/<m>-backend, feature/<m>-web (stacked on backend: review backend first), feature/<m>-mobile-<app>,
 feature/<m>-devops, qa/<m>-integration (throwaway merge for QA).
 
-## Jira-first workflow (`ma-*` commands)
-An alternative to the brief-first flow above: work from a Jira ticket instead of hand-editing `docs/brief.md`.
+## Jira-first workflow
+`ma-plan` and `ma-deliver` both take an optional Jira ticket id argument — an alternative to hand-editing
+`docs/brief.md`. The other `ma-*` commands only make sense with Jira:
 
 | Command | Arguments | Does |
 |---|---|---|
 | `/ma-po-new` | `"task description"` | Drafts a new Jira ticket, grounded in the real codebase |
 | `/ma-po-edit` | `"edit description" JIRA-ID` | Edits an existing ticket, checked against the codebase |
-| `/ma-plan` | `JIRA-ID` | Syncs `docs/brief.md` from the ticket, then previews stages (Jira-first `plan`) |
-| `/ma-deliver` | `JIRA-ID` | Syncs the brief, then runs the full pipeline (Jira-first `deliver`), same gates |
+| `/ma-plan` | `[JIRA-ID]` | No argument: brief-first preview, as above. With a ticket id: syncs `docs/brief.md` from it first |
+| `/ma-deliver` | `[JIRA-ID \| stage-name]` | No argument: brief-first pipeline, as above. A ticket id syncs the brief first; a stage name resumes from there |
 | `/ma-deploy` | none | Deploys `dev` to staging — fixed target, ignores any argument |
 | `/ma-document` | `JIRA-ID` | Writes up a shipped ticket to Confluence from the ticket, diff and QA notes |
 
 `/ma-qa` is intentionally not included yet — it's being designed separately (local Playwright, no MCP).
 
 **Setup**:
-1. Run `/delivery-crew:crew-init` (or `/crew-init`) — it now also writes a `## Integrations` block to
+1. Run `/delivery-crew:ma-init` (or `/ma-init`) — it now also writes a `## Integrations` block to
    `CLAUDE.md` with empty values: `jira_project_key`, `jira_site` (optional), `confluence_space` and
    `confluence_parent_page` (optional), `staging_deploy`. If `CLAUDE.md` already existed, it's not modified —
    the command instead prints the block for you to paste in.
@@ -143,7 +150,7 @@ An alternative to the brief-first flow above: work from a Jira ticket instead of
 Every Jira fetch is cached to `docs/tickets/<ID>.md`; read-only commands fall back to that snapshot (with a
 staleness warning) if Jira is unreachable. Writes always show a draft or diff first and wait for an explicit
 yes — nothing is created, edited, transitioned, or posted on its own. See
-[docs/guide.md §10](docs/guide.md#10-jira-first-workflow-ma--commands) for the full reference.
+[docs/guide.md §10](docs/guide.md#10-jira-first-workflow) for the full reference.
 
 ## Update
 Edit agents/commands, bump `version` in `plugins/delivery-crew/.claude-plugin/plugin.json`, push, then in each

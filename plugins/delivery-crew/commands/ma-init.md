@@ -5,18 +5,18 @@ Set up this project for the delivery crew. Create each file below ONLY if it doe
 Then say which files you created and that I must fill in `docs/brief.md` (milestone, features, delivery profile, a
 Database that is not PENDING, and a Stack section only if the project isn't Laravel+Blade+Flutter).
 If this is an existing codebase (not a fresh repo), set `project_mode: existing` and the `layout:` field, and remind me the first
-`deliver` run (`/delivery-crew:deliver` via the marketplace route, or `/deliver` if installed via `install.sh`) will insert
-a Discover stage that writes `docs/00-codebase-map.md` for me to review before Tech Lead runs.
-Then run `plan` (`/delivery-crew:plan` or `/plan`) to preview the stages before running `deliver`.
+`ma-deliver` run (`/delivery-crew:ma-deliver` via the marketplace route, or `/ma-deliver` if installed via `install.sh`)
+will insert a Discover stage that writes `docs/00-codebase-map.md` for me to review before Tech Lead runs.
+Then run `ma-plan` (`/delivery-crew:ma-plan` or `/ma-plan`) to preview the stages before running `ma-deliver`.
 
 If `CLAUDE.md` already exists, do not modify it — instead print the `## Integrations` block from File 1 below and tell
-me to paste it in myself if I want the Jira-first `ma-*` commands (see README).
+me to paste it in myself if I want the Jira-first argument on `ma-plan`/`ma-deliver` (see README).
 
 **File 1: `CLAUDE.md`**
 ```
 # Virtual Software Agency – Project Rules
 
-## Pipeline (sequential, via the deliver command)
+## Pipeline (sequential, via the ma-deliver command)
 Discover (project_mode: existing only) → PO → BA → UX → UI/UX → Tech Lead → Backend → Web (if profile) → Mobile per app (if profile) → extra agents → QA → DevOps
 Stages depend on the Delivery profile in docs/brief.md.
 
@@ -33,8 +33,8 @@ Stages depend on the Delivery profile in docs/brief.md.
 - Do not invent a database choice. If the brief says PENDING, stop.
 - project_mode: existing (docs/brief.md) — no developer ever scaffolds a new framework project. Backend/web/mobile code goes into the paths in `docs/brief.md`'s `layout:` field and `docs/00-codebase-map.md`, following existing conventions. Migrations are additive only (no column drops/renames), applied to a local/dev database only.
 
-## Integrations (optional — only needed for the Jira-first ma-* commands)
-jira_project_key:          # e.g. PROJ — required by ma-po-new, ma-po-edit, ma-plan, ma-deliver, ma-document
+## Integrations (optional — only needed for the Jira-first argument on ma-plan/ma-deliver, and ma-po-new/ma-po-edit/ma-deploy/ma-document)
+jira_project_key:          # e.g. PROJ — required by ma-po-new, ma-po-edit, ma-plan <id>, ma-deliver <id>, ma-document
 jira_site:                 # optional, your-domain.atlassian.net
 confluence_space:          # optional — required by ma-document if creating a new page
 confluence_parent_page:    # optional — preferred parent page for new docs, by title

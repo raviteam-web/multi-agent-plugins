@@ -6,7 +6,7 @@ branch or environment override, and never touch production.
 
 ## 1. Read the deploy method
 Read `staging_deploy` from `## Integrations` in `CLAUDE.md`. If missing, stop and tell me to add it (see
-`crew-init`). If the configured method looks like it points at production (e.g. names a prod host, prod
+`ma-init`). If the configured method looks like it points at production (e.g. names a prod host, prod
 branch, or prod environment), stop and say why.
 
 ## 2. Pre-checks

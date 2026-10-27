@@ -1,4 +1,15 @@
 # Changelog
+## 1.5.0
+- **Breaking**: every command is now prefixed `ma-` (for "multi-agent"), so it's always clear which commands
+  belong to this crew versus Claude Code's own built-ins. `crew-init` → `ma-init`. `plan` and `deliver` are
+  retired as separate commands; their behavior is folded into `ma-plan`/`ma-deliver` as the no-argument case.
+- `ma-plan [JIRA-ID]` and `ma-deliver [JIRA-ID | stage-name]` now take an optional argument: with none, they run
+  exactly as the old `plan`/`deliver` did (brief-first); with a Jira ticket id, they sync `docs/brief.md` from
+  it first, Jira-first style; `ma-deliver` also still accepts a stage name to resume from, classified by shape
+  (uppercase-id vs. known lowercase stage name) since both share the one argument slot.
+- Projects on 1.4.0 or earlier must update: re-run `install.sh`/`/plugin marketplace update`, then use
+  `ma-init`/`ma-plan`/`ma-deliver` going forward — `crew-init`, `plan` and `deliver` no longer exist.
+
 ## 1.4.0
 - New Jira-first command set (additive — brief-first `crew-init`/`plan`/`deliver` are unchanged): `ma-po-new`,
   `ma-po-edit`, `ma-plan`, `ma-deliver`, `ma-deploy`, `ma-document`. Reads/writes Jira and Confluence via the

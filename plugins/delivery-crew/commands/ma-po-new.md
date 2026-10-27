@@ -7,7 +7,7 @@ usage line (`ma-po-new "task description"`) and stop.
 
 ## 1. Preflight
 Read `## Integrations` in `CLAUDE.md`. If missing or `jira_project_key` is empty, stop and say which key to add
-(see `crew-init`). Confirm the Atlassian MCP is connected (`getAccessibleAtlassianResources`); if not, tell me
+(see `ma-init`). Confirm the Atlassian MCP is connected (`getAccessibleAtlassianResources`); if not, tell me
 to run `claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp` then `/mcp`, and stop.
 
 ## 2. Ground it in the code
