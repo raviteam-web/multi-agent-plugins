@@ -33,6 +33,9 @@ See [docs/guide.md §2](docs/guide.md#2-requirements-and-install) for exactly wh
 5. `/delivery-crew:deliver`  runs the pipeline; approval required after the Tech Lead plan.
    Resume: `/delivery-crew:deliver tech-lead`
 
+Installed via `install.sh` instead of `/plugin`? Drop the `delivery-crew:` prefix — the same commands are just
+`/crew-init`, `/plan`, `/deliver` (no plugin namespace exists for copied-in commands).
+
 ## New project vs existing project
 | | New project | Existing project |
 |---|---|---|
@@ -82,6 +85,65 @@ where the brief leaves that open.
 ## Branches (nothing is merged or pushed by the crew)
 feature/<m>-backend, feature/<m>-web (stacked on backend: review backend first), feature/<m>-mobile-<app>,
 feature/<m>-devops, qa/<m>-integration (throwaway merge for QA).
+
+## Jira-first workflow (`ma-*` commands)
+An alternative to the brief-first flow above: work from a Jira ticket instead of hand-editing `docs/brief.md`.
+
+| Command | Arguments | Does |
+|---|---|---|
+| `/ma-po-new` | `"task description"` | Drafts a new Jira ticket, grounded in the real codebase |
+| `/ma-po-edit` | `"edit description" JIRA-ID` | Edits an existing ticket, checked against the codebase |
+| `/ma-plan` | `JIRA-ID` | Syncs `docs/brief.md` from the ticket, then previews stages (Jira-first `plan`) |
+| `/ma-deliver` | `JIRA-ID` | Syncs the brief, then runs the full pipeline (Jira-first `deliver`), same gates |
+| `/ma-deploy` | none | Deploys `dev` to staging — fixed target, ignores any argument |
+| `/ma-document` | `JIRA-ID` | Writes up a shipped ticket to Confluence from the ticket, diff and QA notes |
+
+`/ma-qa` is intentionally not included yet — it's being designed separately (local Playwright, no MCP).
+
+**Setup**:
+1. Run `/delivery-crew:crew-init` (or `/crew-init`) — it now also writes a `## Integrations` block to
+   `CLAUDE.md` with empty values: `jira_project_key`, `jira_site` (optional), `confluence_space` and
+   `confluence_parent_page` (optional), `staging_deploy`. If `CLAUDE.md` already existed, it's not modified —
+   the command instead prints the block for you to paste in.
+2. Register and authenticate the Atlassian MCP:
+   ```
+   claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp
+   /mcp
+   ```
+   (OAuth 2.1; an API token is also supported as an alternative — see Atlassian's own docs for that flow.)
+3. Recommended `.claude/settings.json` permissions — allow the read tools, leave every write tool on "ask" so
+   nothing reaches Jira/Confluence without your approval, and never allow `git push`:
+   ```json
+   {
+     "permissions": {
+       "allow": [
+         "mcp__atlassian__getAccessibleAtlassianResources",
+         "mcp__atlassian__getJiraIssue",
+         "mcp__atlassian__searchJiraIssuesUsingJql",
+         "mcp__atlassian__getVisibleJiraProjects",
+         "mcp__atlassian__getJiraProjectIssueTypesMetadata",
+         "mcp__atlassian__getJiraIssueTypeMetaWithFields",
+         "mcp__atlassian__getTransitionsForJiraIssue",
+         "mcp__atlassian__getConfluencePage",
+         "mcp__atlassian__searchConfluenceUsingCql"
+       ],
+       "ask": [
+         "mcp__atlassian__createJiraIssue",
+         "mcp__atlassian__editJiraIssue",
+         "mcp__atlassian__addCommentToJiraIssue",
+         "mcp__atlassian__transitionJiraIssue",
+         "mcp__atlassian__createConfluencePage",
+         "mcp__atlassian__updateConfluencePage"
+       ],
+       "deny": ["Bash(git push:*)"]
+     }
+   }
+   ```
+
+Every Jira fetch is cached to `docs/tickets/<ID>.md`; read-only commands fall back to that snapshot (with a
+staleness warning) if Jira is unreachable. Writes always show a draft or diff first and wait for an explicit
+yes — nothing is created, edited, transitioned, or posted on its own. See
+[docs/guide.md §10](docs/guide.md#10-jira-first-workflow-ma--commands) for the full reference.
 
 ## Update
 Edit agents/commands, bump `version` in `plugins/delivery-crew/.claude-plugin/plugin.json`, push, then in each

@@ -1,4 +1,19 @@
 # Changelog
+## 1.4.0
+- New Jira-first command set (additive — brief-first `crew-init`/`plan`/`deliver` are unchanged): `ma-po-new`,
+  `ma-po-edit`, `ma-plan`, `ma-deliver`, `ma-deploy`, `ma-document`. Reads/writes Jira and Confluence via the
+  Atlassian MCP (`claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp`); every write is
+  shown as a draft/diff and requires explicit approval; ticket fetches are cached to `docs/tickets/<ID>.md` for
+  offline fallback on read-only commands.
+- `crew-init` now also writes a `## Integrations` section to `CLAUDE.md` (`jira_project_key`, `jira_site`,
+  `confluence_space`, `confluence_parent_page`, `staging_deploy`), empty by default; if `CLAUDE.md` already
+  exists it prints the block instead of modifying the file, keeping the never-overwrite rule.
+- Fixed `crew-init`/`plan`/`deliver` hard-coding `/delivery-crew:...` in their own instruction text and in the
+  generated `CLAUDE.md` template; they now read correctly whether invoked with the marketplace's
+  `delivery-crew:` prefix or bare (`install.sh` route, no plugin namespace) — this was the cause of `/plan`
+  colliding with Claude Code's own built-in `/plan` (plan mode) for install.sh-route projects.
+- `ma-qa` is intentionally not included yet; it's being designed separately (local Playwright, no MCP).
+
 ## 1.3.0
 - Stack is no longer fixed to Laravel+Flutter. New `## Stack` section in docs/brief.md: `backend: laravel|node|django`,
   `web: embedded|spa|none`, `mobile: flutter|react-native|none`.

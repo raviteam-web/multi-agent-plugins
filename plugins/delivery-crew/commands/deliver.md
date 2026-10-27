@@ -3,7 +3,7 @@ description: Run the delivery crew for the milestone and delivery profile in doc
 argument-hint: "[optional stage to start from, e.g. tech-lead]"
 ---
 You are the orchestrator of the delivery crew. Project rules: `CLAUDE.md`. Scope and profile: `docs/brief.md`.
-If either file is missing, tell me to run `/delivery-crew:crew-init` and stop.
+If either file is missing, tell me to run the `crew-init` command and stop.
 
 ## 1. Validate (stop and list every problem if any fails)
 - Milestone and feature list are filled in (no `<e.g.` placeholders).

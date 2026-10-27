@@ -50,6 +50,10 @@ teammate has to run one of the two install routes themselves, on their own compu
 anything there, on purpose): run `/agents` and see if the crew's agents are listed, or just try
 `/delivery-crew:plan`. If it runs — even if it just tells you `docs/brief.md` is missing — the install worked.
 
+Every command in this guide is written as `/delivery-crew:<name>` (the marketplace-route form). If you
+installed via `install.sh` instead, there's no plugin namespace — drop the prefix and use `/<name>` (e.g.
+`/crew-init`, `/plan`, `/deliver`) directly.
+
 ## 3. Quickstart — New project
 
 1. `/delivery-crew:crew-init` — creates `CLAUDE.md` and `docs/brief.md` if they don't already exist (never overwrites).
@@ -268,7 +272,72 @@ is stacked on it.
 - Report issues or request changes the same way you would any other change to this repo — open an issue or
   reach out to whoever owns the plugin repo for your org.
 
-## 10. Rules for humans using the crew
+## 10. Jira-first workflow (`ma-*` commands)
+
+An alternative to §3/§4: instead of hand-editing `docs/brief.md`, work from a Jira ticket. The brief-first
+commands (`crew-init`, `plan`, `deliver`) are unchanged and still work exactly as above; these are additive.
+
+| Command | Arguments | Does |
+|---|---|---|
+| `ma-po-new` | `"task description"` | Drafts a new Jira ticket, grounded in a read-only pass over the codebase |
+| `ma-po-edit` | `"edit description" JIRA-ID` | Edits an existing ticket, checked against the codebase |
+| `ma-plan` | `JIRA-ID` | Syncs `docs/brief.md` from the ticket, then runs the same preview as `plan` |
+| `ma-deliver` | `JIRA-ID` | Syncs the brief, then runs the same pipeline as `deliver` — same gates, no exceptions |
+| `ma-deploy` | none | Deploys `dev` to staging; the target is fixed, any argument is ignored |
+| `ma-document` | `JIRA-ID` | Writes up a shipped ticket to Confluence from the ticket, the branch diff, and QA notes |
+
+`ma-qa` is out of scope for now — it's being designed separately (local Playwright, no MCP, reading a PostHog
+replay URL in-page).
+
+**Argument parsing**: a Jira id matches `[A-Z][A-Z0-9]+-\d+`. The LAST argument token matching this pattern is
+the ticket id; everything before it is free text (so `ma-po-edit "mentions JIRA-1 in passing" PROJ-12` resolves
+to id `PROJ-12`, not `JIRA-1`). A command that requires an id and gets none prints its usage line and stops. A
+malformed id (matches the shape loosely but isn't valid) stops with a clear message rather than being guessed at.
+
+**Integrations config**: every `ma-*` command reads its settings from a `## Integrations` section in
+`CLAUDE.md` — `jira_project_key`, `jira_site` (optional), `confluence_space`/`confluence_parent_page`
+(optional), `staging_deploy`. `crew-init` writes this as an empty template when creating a new `CLAUDE.md`, or
+prints it for you to paste in if `CLAUDE.md` already exists — it never modifies an existing file. If a command
+needs a key that's missing, it stops and names the key; it never guesses a Jira site, project key, or
+Confluence space.
+
+**Jira/Confluence access**: via the Atlassian MCP, registered with
+`claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp`, then `/mcp` to authenticate
+(OAuth 2.1; API token is also supported — see Atlassian's own docs for that flow). Recommended
+`.claude/settings.json` shape: allow the read tools (`getAccessibleAtlassianResources`, `getJiraIssue`,
+`searchJiraIssuesUsingJql`, `getVisibleJiraProjects`, `getJiraProjectIssueTypesMetadata`,
+`getJiraIssueTypeMetaWithFields`, `getTransitionsForJiraIssue`, `getConfluencePage`, `searchConfluenceUsingCql`);
+leave every write tool (`createJiraIssue`, `editJiraIssue`, `addCommentToJiraIssue`, `transitionJiraIssue`,
+`createConfluencePage`, `updateConfluencePage`) on "ask" — this is what enforces "only with my approval" at the
+tool level. Never allow `git push`.
+
+**Ticket snapshots**: every Jira fetch is saved to `docs/tickets/<ID>.md` (summary, description, acceptance
+criteria, status, fetched-at timestamp). Read-only commands (`ma-plan`, `ma-deliver`, `ma-document`) fall back
+to the snapshot with a visible staleness warning if Jira is unreachable; if there's no snapshot either, they
+stop rather than invent ticket content. Write commands (`ma-po-edit`'s edit, and anything that must post or
+transition) stop outright if Jira is unreachable — they never act from a stale snapshot.
+
+**Writes need approval**: any Jira or Confluence write is shown first as a draft or diff, written only after an
+explicit yes. Status transitions are always offered via `getTransitionsForJiraIssue` and never picked
+automatically — same principle as the Tech Lead and QA gates in §7.
+
+**Brief sync (`ma-plan`/`ma-deliver`)**: only `## Current milestone` and `## Feature list` are written from the
+ticket. Every other brief section — `## Delivery profile`, `project_mode`, `layout:`, `## Stack`,
+`## Exclusions`, `## Schema notes`, `## Database` — is preserved exactly as it was.
+
+**Troubleshooting**:
+- **A `ma-*` command stops asking for an Integrations key**: add it to `## Integrations` in `CLAUDE.md` — see
+  the template `crew-init` prints. Don't guess the value yourself from an old ticket or branch name.
+- **"Atlassian MCP not connected"**: run `claude mcp add --transport http atlassian
+  https://mcp.atlassian.com/v2/mcp` then `/mcp` in a fresh session to authenticate.
+- **A ticket id isn't recognized**: check it matches `[A-Z][A-Z0-9]+-\d+` and is the LAST token in the
+  argument — free text containing something that looks like an id earlier in the string is ignored by design.
+- **Jira is unreachable mid-command**: read-only commands fall back to `docs/tickets/<ID>.md` if one exists;
+  write commands stop instead of guessing. Re-run once Jira is back.
+- **`ma-deploy` refuses to run**: either `staging_deploy` is missing from `## Integrations`, or the configured
+  method looks like it points at production — both are deliberate; fix the brief/CLAUDE.md rather than forcing it.
+
+## 11. Rules for humans using the crew
 
 - Never skip the Tech Lead approval gate, even for a small milestone.
 - `RECOMMENDATION: NO-GO` from QA means stop — don't merge around it.
