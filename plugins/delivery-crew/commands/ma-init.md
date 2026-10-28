@@ -33,12 +33,17 @@ Stages depend on the Delivery profile in docs/brief.md.
 - Do not invent a database choice. If the brief says PENDING, stop.
 - project_mode: existing (docs/brief.md) — no developer ever scaffolds a new framework project. Backend/web/mobile code goes into the paths in `docs/brief.md`'s `layout:` field and `docs/00-codebase-map.md`, following existing conventions. Migrations are additive only (no column drops/renames), applied to a local/dev database only.
 
-## Integrations (optional — only needed for the Jira-first argument on ma-plan/ma-deliver, and ma-po-new/ma-po-edit/ma-deploy/ma-document)
-jira_project_key:          # e.g. PROJ — required by ma-po-new, ma-po-edit, ma-plan <id>, ma-deliver <id>, ma-document
+## Integrations (optional — only needed for the Jira-first argument on ma-plan/ma-deliver, and ma-po-new/ma-po-edit/ma-deploy/ma-document/ma-qa)
+jira_project_key:          # e.g. PROJ — required by ma-po-new, ma-po-edit, ma-plan <id>, ma-deliver <id>, ma-document, ma-qa
 jira_site:                 # optional, your-domain.atlassian.net
 confluence_space:          # optional — required by ma-document if creating a new page
 confluence_parent_page:    # optional — preferred parent page for new docs, by title
 staging_deploy:            # required by ma-deploy — the script/CI-trigger/command that deploys `dev` to staging
+qa_local_url:              # required by ma-qa — the local dev server URL to test against, e.g. http://localhost:8000
+posthog_host:              # required by ma-qa — e.g. https://us.posthog.com, https://eu.posthog.com, or self-hosted
+posthog_project_id:        # required by ma-qa — from PostHog project settings
+                          # Never put secrets here (this file is committed). ma-qa reads the PostHog personal
+                          # API key from the POSTHOG_PERSONAL_API_KEY environment variable, not from this file.
 ```
 
 **File 2: `docs/brief.md`**

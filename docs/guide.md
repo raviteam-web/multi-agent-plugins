@@ -291,9 +291,7 @@ work from a Jira ticket instead of hand-editing `docs/brief.md`. With no argumen
 | `ma-deliver` | `[JIRA-ID \| stage-name]` | No argument: brief-first pipeline (§3/§4). A ticket id syncs the brief first; a stage name resumes from there |
 | `ma-deploy` | none | Deploys `dev` to staging; the target is fixed, any argument is ignored |
 | `ma-document` | `JIRA-ID` | Writes up a shipped ticket to Confluence from the ticket, the branch diff, and QA notes |
-
-`ma-qa` is out of scope for now — it's being designed separately (local Playwright, no MCP, reading a PostHog
-replay URL in-page).
+| `ma-qa` | `JIRA-ID` | Runs a real local-browser Playwright test from the ticket's QA hints, then attaches a PostHog session recording link to the ticket |
 
 **Argument parsing**: a Jira id matches `[A-Z][A-Z0-9]+-\d+`. For `ma-po-edit`, the LAST argument token matching
 this pattern is the ticket id; everything before it is free text (so `ma-po-edit "mentions JIRA-1 in passing"
@@ -305,10 +303,29 @@ than being guessed at.
 
 **Integrations config**: every `ma-*` command reads its settings from a `## Integrations` section in
 `CLAUDE.md` — `jira_project_key`, `jira_site` (optional), `confluence_space`/`confluence_parent_page`
-(optional), `staging_deploy`. `ma-init` writes this as an empty template when creating a new `CLAUDE.md`, or
-prints it for you to paste in if `CLAUDE.md` already exists — it never modifies an existing file. If a command
-needs a key that's missing, it stops and names the key; it never guesses a Jira site, project key, or
-Confluence space.
+(optional), `staging_deploy`, and (for `ma-qa`) `qa_local_url`, `posthog_host`, `posthog_project_id`. `ma-init`
+writes this as an empty template when creating a new `CLAUDE.md`, or prints it for you to paste in if
+`CLAUDE.md` already exists — it never modifies an existing file. If a command needs a key that's missing, it
+stops and names the key; it never guesses a Jira site, project key, or Confluence space.
+
+**`ma-qa`'s PostHog correlation**: there's no PostHog MCP tool, so `ma-qa` talks to PostHog directly over its
+REST API (verified against PostHog's own docs). The flow, once Playwright's browser session has run against
+`qa_local_url`:
+1. The generated spec tags the session right after its first navigation, via
+   `page.evaluate` calling `window.posthog.capture('qa_run_marker', { run_id: <per-run id> })` — the run id
+   comes from the `QA_RUN_ID` environment variable the command sets, never hardcoded in the spec file.
+2. `ma-qa` queries `POST {posthog_host}/api/projects/{posthog_project_id}/query/` with a HogQL query
+   (`SELECT distinct $session_id FROM events WHERE properties.run_id = '<run id>' ...`) to resolve that marker
+   to a `$session_id`.
+3. It then calls `PATCH {posthog_host}/api/projects/{posthog_project_id}/session_recordings/{session_id}/sharing`
+   with `{"enabled": true}`, and builds the link from the response's `accessToken`:
+   `{posthog_host}/embedded/{accessToken}` — shareable with anyone, not just PostHog project members.
+All three calls authenticate with `Authorization: Bearer $POSTHOG_PERSONAL_API_KEY` — **this key is a secret
+and is read only from that environment variable, never from `CLAUDE.md` or any other committed file.**
+
+**`ma-qa`'s test specs stay out of the target project's git history**: `tests/e2e/<ID>.spec.ts` is generated
+and run locally, but `ma-qa` first ensures the target project's `.gitignore` covers `tests/e2e/`, appending an
+entry if one isn't already there. These are per-machine QA artifacts, not a shared, CI-run regression suite.
 
 **Jira/Confluence access**: via the Atlassian MCP, registered with
 `claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp`, then `/mcp` to authenticate
@@ -345,6 +362,12 @@ ticket. Every other brief section — `## Delivery profile`, `project_mode`, `la
   write commands stop instead of guessing. Re-run once Jira is back.
 - **`ma-deploy` refuses to run**: either `staging_deploy` is missing from `## Integrations`, or the configured
   method looks like it points at production — both are deliberate; fix the brief/CLAUDE.md rather than forcing it.
+- **`ma-qa` reports no PostHog recording**: either the app's PostHog SDK isn't active on the page under test
+  (check `window.posthog` exists in a real browser first), or ingestion was slower than the retry window —
+  the QA report and Jira comment still go out, just without a link; re-run once PostHog has caught up if you
+  need the recording. This never blocks the test results themselves from being reported.
+- **`ma-qa` stops asking for `POSTHOG_PERSONAL_API_KEY`**: export it in your shell — it's deliberately never
+  read from `CLAUDE.md` or any other file, since that file is committed to the repo.
 
 ## 11. Rules for humans using the crew
 

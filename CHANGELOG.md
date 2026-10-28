@@ -1,4 +1,21 @@
 # Changelog
+## 1.6.0
+- New `ma-qa JIRA-ID` command: runs a real local-browser Playwright test generated from the ticket's QA hints
+  (or acceptance criteria), then attaches a shareable PostHog session recording link to the Jira ticket.
+- PostHog correlation (no PostHog MCP tool exists, so this is direct REST calls, verified against PostHog's own
+  docs): the generated spec tags its session via a `posthog.capture('qa_run_marker', { run_id })` call using a
+  per-run `QA_RUN_ID` env var; `ma-qa` resolves that to a `$session_id` via PostHog's HogQL query API, then
+  makes it shareable via PostHog's session-recording sharing endpoint.
+- New `## Integrations` keys: `qa_local_url`, `posthog_host`, `posthog_project_id` (non-secret, committed via
+  `ma-init`'s template as before). The PostHog **personal API key is read only from the
+  `POSTHOG_PERSONAL_API_KEY` environment variable** — deliberately never written to `CLAUDE.md` or any other
+  committed file, since it's a secret.
+- `tests/e2e/<KEY>.spec.ts` (the generated Playwright spec) is kept out of the target project's own git
+  history: `ma-qa` appends a `tests/e2e/` entry to that project's `.gitignore` before first writing one. These
+  are per-machine QA artifacts, not a shared, CI-run regression suite.
+- `ma-qa` only reads from the target app's existing PostHog instrumentation — it never installs or configures
+  PostHog itself, and the local dev server must already be running (this command never starts one).
+
 ## 1.5.0
 - **Breaking**: every command is now prefixed `ma-` (for "multi-agent"), so it's always clear which commands
   belong to this crew versus Claude Code's own built-ins. `crew-init` → `ma-init`. `plan` and `deliver` are

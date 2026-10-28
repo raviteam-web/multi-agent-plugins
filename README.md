@@ -104,14 +104,17 @@ feature/<m>-devops, qa/<m>-integration (throwaway merge for QA).
 | `/ma-deliver` | `[JIRA-ID \| stage-name]` | No argument: brief-first pipeline, as above. A ticket id syncs the brief first; a stage name resumes from there |
 | `/ma-deploy` | none | Deploys `dev` to staging — fixed target, ignores any argument |
 | `/ma-document` | `JIRA-ID` | Writes up a shipped ticket to Confluence from the ticket, diff and QA notes |
-
-`/ma-qa` is intentionally not included yet — it's being designed separately (local Playwright, no MCP).
+| `/ma-qa` | `JIRA-ID` | Runs a real local-browser test (Playwright) from the ticket's QA hints, then attaches a PostHog session recording link to the ticket |
 
 **Setup**:
 1. Run `/delivery-crew:ma-init` (or `/ma-init`) — it now also writes a `## Integrations` block to
    `CLAUDE.md` with empty values: `jira_project_key`, `jira_site` (optional), `confluence_space` and
-   `confluence_parent_page` (optional), `staging_deploy`. If `CLAUDE.md` already existed, it's not modified —
-   the command instead prints the block for you to paste in.
+   `confluence_parent_page` (optional), `staging_deploy`, and — for `ma-qa` — `qa_local_url`, `posthog_host`,
+   `posthog_project_id`. If `CLAUDE.md` already existed, it's not modified — the command instead prints the
+   block for you to paste in.
+   **`ma-qa` also needs a `POSTHOG_PERSONAL_API_KEY` environment variable** (Query Read +
+   session_recording:read/write scopes) — never put this in `CLAUDE.md` or any other committed file, it's a
+   secret; export it in your shell instead.
 2. Register and authenticate the Atlassian MCP:
    ```
    claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp

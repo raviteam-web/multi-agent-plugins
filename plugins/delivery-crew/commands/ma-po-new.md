@@ -20,7 +20,7 @@ and mobile screens relevant to the description. Work only from what you find —
 - **Acceptance criteria**: Given/When/Then, each independently testable.
 - **Technical notes**: affected modules/files, routes/endpoints, schema changes, existing patterns to follow.
 - **Out of scope**.
-- **QA hints**: URLs/screens, steps, test data — feeds the future `ma-qa` command.
+- **QA hints**: URLs/screens, steps, test data — feeds the `ma-qa` command's generated Playwright test.
 - **Open questions**: anything you couldn't settle from the code. Never guess here.
 
 Pick the issue type from `getJiraProjectIssueTypesMetadata`/`getJiraIssueTypeMetaWithFields` for
