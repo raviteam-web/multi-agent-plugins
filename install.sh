@@ -27,8 +27,9 @@ cp -f "$PLUGIN_DIR"/commands/*.md "$DEST_COMMANDS/"
 
 echo "$VERSION" > "$TARGET/.claude/delivery-crew.version"
 
+COMMAND_NAMES="$(cd "$DEST_COMMANDS" && ls *.md | sed 's/\.md$//' | paste -sd, -)"
+
 echo "Installed delivery-crew v$VERSION into $TARGET/.claude/"
 echo "Next: open $TARGET in Claude Code / the VS Code panel, run /help to see the installed"
-echo "command names (all prefixed ma-: ma-init, ma-plan, ma-deliver, ma-po-new, ma-po-edit, ma-deploy,"
-echo "ma-document), then start with ma-init."
+echo "command names (all prefixed ma-: $COMMAND_NAMES), then start with ma-init."
 echo "To update later: pull the latest plugin repo and re-run this script."
